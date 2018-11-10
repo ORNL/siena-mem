@@ -1,0 +1,190 @@
+//NPB MG
+model mg_C{
+
+param nThreads = 32
+param nItr = 1
+
+// Word Size in bytes
+param dpsize = 8
+param spsize = 4
+
+// Grid Levels
+param l1 =4
+param l2 =6 
+param l3 =10 
+param l4 =18 
+param l5 =34 
+param l6 =66 
+param l7 =130 
+param l8 =258 
+param l9 =514
+
+// Data structures
+// common /noautom/ u,v,r
+// double precision u(nr),v(nv),r(nr)
+data u1 as Matrix(l1,l1,l1, dpsize)
+data r1 as Matrix(l1,l1,l1, dpsize)
+data u2 as Matrix(l2,l2,l2, dpsize)
+data r2 as Matrix(l2,l2,l2, dpsize)
+data u3 as Matrix(l3,l3,l3, dpsize)
+data r3 as Matrix(l3,l3,l3, dpsize)
+data u4 as Matrix(l4,l4,l4, dpsize)
+data r4 as Matrix(l4,l4,l4, dpsize)
+data u5 as Matrix(l5,l5,l5, dpsize)
+data r5 as Matrix(l5,l5,l5, dpsize)
+data u6 as Matrix(l6,l6,l6, dpsize)
+data r6 as Matrix(l6,l6,l6, dpsize)
+data u7 as Matrix(l7,l7,l7, dpsize)
+data r7 as Matrix(l7,l7,l7, dpsize)
+data u8 as Matrix(l8,l8,l8, dpsize)
+data r8 as Matrix(l8,l8,l8, dpsize)
+data u9 as Matrix(l9,l9,l9, dpsize)
+data r9 as Matrix(l9,l9,l9, dpsize)
+
+
+kernel psinv1{
+    param global_control=(l1-2)*(l1-2)   
+    execute [nThreads] "psinv( r,u,n1,n2,n3,c,k)"
+    {
+    	 flops [global_control*l1*6] as dp
+         loads [global_control*l1] of size [dpsize] from r1 as stencil8p
+	 loads [global_control*(l1-2)] of size [dpsize] from r1 as stencil3p
+	 loads [global_control*(l1-2)] of size [dpsize] from u1 as ghostcell
+	 flops [global_control*(l1-2)*10] as dp
+	 stores[global_control*(l1-2)] of size [dpsize] to u1   as ghostcell,dep(u1)
+    }
+}
+
+
+kernel psinv2{
+    param global_control=(l2-2)*(l2-2)   
+    execute [nThreads] "psinv( r,u,n1,n2,n3,c,k)"
+    {
+    	 flops [global_control*l2*6] as dp
+         loads [global_control*l2] of size [dpsize] from r2 as stencil8p
+	 loads [global_control*(l2-2)] of size [dpsize] from r2 as stencil3p
+	 loads [global_control*(l2-2)] of size [dpsize] from u2 as ghostcell
+	 flops [global_control*(l2-2)*10] as dp
+	 stores[global_control*(l2-2)] of size [dpsize] to u2   as ghostcell,dep(u2)
+    }
+}
+
+kernel psinv3{
+    param global_control=(l3-2)*(l3-2)   
+    execute [nThreads] "psinv( r,u,n1,n2,n3,c,k)"
+    {
+    	 flops [global_control*l3*6] as dp
+         loads [global_control*l3] of size [dpsize] from r3 as stencil8p
+	 loads [global_control*(l3-2)] of size [dpsize] from r3 as stencil3p
+	 loads [global_control*(l3-2)] of size [dpsize] from u3 as ghostcell
+	 flops [global_control*(l3-2)*10] as dp
+	 stores[global_control*(l3-2)] of size [dpsize] to u3   as ghostcell,dep(u3)
+    }
+}
+
+kernel psinv4{
+    param global_control=(l4-2)*(l4-2)   
+    execute [nThreads] "psinv( r,u,n1,n2,n3,c,k)"
+    {
+    	 flops [global_control*l4*6] as dp
+         loads [global_control*l4] of size [dpsize] from r4 as stencil8p
+	 loads [global_control*(l4-2)] of size [dpsize] from r4 as stencil3p
+	 loads [global_control*(l4-2)] of size [dpsize] from u4 as ghostcell
+	 flops [global_control*(l4-2)*10] as dp
+	 stores[global_control*(l4-2)] of size [dpsize] to u4   as ghostcell,dep(u4)
+    }
+}
+
+kernel psinv5{
+    param global_control=(l5-2)*(l5-2)   
+    execute [nThreads] "psinv( r,u,n1,n2,n3,c,k)"
+    {
+    	 flops [global_control*l5*6] as dp
+         loads [global_control*l5] of size [dpsize] from r5 as stencil8p
+	 loads [global_control*(l5-2)] of size [dpsize] from r5 as stencil3p
+	 loads [global_control*(l5-2)] of size [dpsize] from u5 as ghostcell
+	 flops [global_control*(l5-2)*10] as dp
+	 stores[global_control*(l5-2)] of size [dpsize] to u5   as ghostcell,dep(u5)
+    }
+}
+
+kernel psinv6{
+    param global_control=(l6-2)*(l6-2)   
+    execute [nThreads] "psinv( r,u,n1,n2,n3,c,k)"
+    {
+    	 flops [global_control*l6*6] as dp
+         loads [global_control*l6] of size [dpsize] from r6 as stencil8p
+	 loads [global_control*(l6-2)] of size [dpsize] from r6 as stencil3p
+	 loads [global_control*(l6-2)] of size [dpsize] from u6 as ghostcell
+	 flops [global_control*(l6-2)*10] as dp
+	 stores[global_control*(l6-2)] of size [dpsize] to u6   as ghostcell,dep(u6)
+    }
+}
+
+kernel psinv7{
+    param global_control=(l7-2)*(l7-2)   
+    execute [nThreads] "psinv( r,u,n1,n2,n3,c,k)"
+    {
+    	 flops [global_control*l7*6] as dp
+         loads [global_control*l7] of size [dpsize] from r7 as stencil8p
+	 loads [global_control*(l7-2)] of size [dpsize] from r7 as stencil3p
+	 loads [global_control*(l7-2)] of size [dpsize] from u7 as ghostcell
+	 flops [global_control*(l7-2)*10] as dp
+	 stores[global_control*(l7-2)] of size [dpsize] to u7   as ghostcell,dep(u7)
+    }
+}
+
+
+kernel psinv8{
+    param global_control=(l8-2)*(l8-2)   
+    execute [nThreads] "psinv( r,u,n1,n2,n3,c,k)"
+    {
+    	 flops [global_control*l8*6] as dp
+         loads [global_control*l8] of size [dpsize] from r8 as stencil8p
+	 loads [global_control*(l8-2)] of size [dpsize] from r8 as stencil3p
+	 loads [global_control*(l8-2)] of size [dpsize] from u8 as ghostcell
+	 flops [global_control*(l8-2)*10] as dp
+	 stores[global_control*(l8-2)] of size [dpsize] to u8   as ghostcell,dep(u8)
+    }
+}
+
+kernel psinv9{
+    param global_control=(l9-2)*(l9-2)   
+    execute [nThreads] "psinv( r,u,n1,n2,n3,c,k)"
+    {
+    	 flops [global_control*l9*6] as dp
+         loads [global_control*l9] of size [dpsize] from r9 as stencil8p
+	 loads [global_control*(l9-2)] of size [dpsize] from r9 as stencil3p
+	 loads [global_control*(l9-2)] of size [dpsize] from u9 as ghostcell
+	 flops [global_control*(l9-2)*10] as dp
+	 stores[global_control*(l9-2)] of size [dpsize] to u9   as ghostcell,dep(u9)
+    }
+}
+
+
+kernel main {
+       //warm up
+       call psinv1
+       call psinv2
+       call psinv3
+       call psinv4
+       call psinv5
+       call psinv6
+       call psinv7
+       call psinv8
+       call psinv9
+
+    iterate counter [nItr] {
+       call psinv1
+       call psinv2
+       call psinv3
+       call psinv4
+       call psinv5
+       call psinv6
+       call psinv7
+       call psinv8
+       call psinv9
+    }
+}
+
+}

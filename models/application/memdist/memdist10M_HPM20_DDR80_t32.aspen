@@ -1,0 +1,27 @@
+model memdist10M_HPM20_DDR80_t32{
+
+param N = 1000000
+param accessize = 64 
+param nThreads = 32
+param nItr = 1
+param GB = 1073741824
+
+data a0 as Array(GB/accessize, accessize)
+data a1 as Array(GB/accessize, accessize)
+data a2 as Array(GB/accessize, accessize)
+
+kernel K0{
+    execute [nThreads] "K0" {
+              loads [N*2] of size [accessize] from a0 as stride 
+              loads [N*8] of size [accessize] from a1 as stride 
+    }
+}
+
+kernel main {
+   //warm up
+   call K0
+   iterate [nItr] {
+      call K0
+   }
+}
+}

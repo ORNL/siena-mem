@@ -1,0 +1,70 @@
+# Copyright 2013-2015 UT-Battelle, LLC.  See LICENSE.txt for more information.
+@VARIABLES@
+
+CPPFLAGS+=-I.
+
+ARCHIVE=../lib/libaspen.a
+LIBRARY=../lib/libaspen.so
+
+LSRC=parser/AspenTokens.l
+YSRC=parser/AspenParser.y
+SRC=\
+ app/ASTCaseItem.cpp \
+ app/ASTControlIfThenStatement.cpp \
+ app/ASTControlIterateStatement.cpp \
+ app/ASTControlKernelCallStatement.cpp \
+ app/ASTControlMapStatement.cpp \
+ app/ASTControlParallelStatement.cpp \
+ app/ASTControlProbabilityStatement.cpp \
+ app/ASTControlSequentialStatement.cpp \
+ app/ASTControlStatement.cpp \
+ app/ASTControlSwitchStatement.cpp \
+ app/ASTExecutionBlock.cpp \
+ app/ASTKernel.cpp \
+ app/ASTSampleStatement.cpp \
+ common/ASTNode.cpp \
+ expr/Array.cpp \
+ expr/ArrayDereference.cpp \
+ expr/BinaryExpr.cpp \
+ expr/CallStackSubstitution.cpp \
+ expr/Comparison.cpp \
+ expr/Expression.cpp \
+ expr/FunctionCall.cpp \
+ expr/Identifier.cpp \
+ expr/IfThenExpr.cpp \
+ expr/Integer.cpp \
+ expr/Real.cpp \
+ expr/SequenceExpr.cpp \
+ expr/Table.cpp \
+ expr/TableDereference.cpp \
+ expr/UnaryExpr.cpp \
+ mach/ASTMachComponent.cpp \
+ model/ASTAppModel.cpp \
+ model/ASTMachModel.cpp \
+ model/ASTMapModel.cpp \
+ map/ASTMapStatement.cpp \
+ map/ASTMap.cpp \
+ parser/Parser.cpp
+
+OBJ=$(SRC:.cpp=.o) $(LSRC:.l=.o) $(YSRC:.y=.o)
+
+all: @LIBRARY_OR_ARCHIVE@
+
+# if we have YACC and LEX, we can rebuild the parser
+ifneq (@YACCLEX@, no)
+parser/AspenParser.cpp: $(YSRC)
+	$(YACC) -d -r all -o $(YSRC:.y=.cpp) $(YSRC)
+
+parser/AspenParser.hpp: parser/AspenParser.cpp
+
+parser/AspenTokens.cpp: $(LSRC) parser/AspenParser.hpp
+	$(LEX) -o $@ $(LSRC)
+
+$(SRC:.cpp=.o): parser/AspenParser.cpp parser/AspenParser.hpp parser/AspenTokens.cpp
+endif
+
+regen regenerate:
+	$(RM) $(LSRC:.l=.cpp) $(YSRC:.y=.hpp) $(YSRC:.y=.cpp) $(YSRC:.y=.output)
+
+
+@TARGETS@

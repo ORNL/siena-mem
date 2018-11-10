@@ -1,0 +1,82 @@
+param GB=1073741824
+param MB=1048576
+
+machine HMS{
+	core[64]  Core_F
+	core[32]  Core_S
+	cache[64] L1_F
+	cache[32] L1_S
+	cache     L2	//backed by HBM
+	memory    DDR4
+	memory    NVM	//backed by PCM
+}
+
+core Core_F{
+     property frequency [4000*mega] //4 GHz
+     property ROB  [192]
+     property LDB  [100]//Load buffer 
+     property STB  [50]
+     property LFB  [10]//Max. No. of simultaneous cache misses
+     property ALU  [4] //8-wide: 4 ALU + 2 LD + 2 ST
+     property LD   [2]
+     property ST   [2]
+     connect {L1_F}
+}
+
+core Core_S{
+     property frequency [2000*mega] //2 GHz
+     property ROB  [128]
+     property LDB  [100]//Load buffer 
+     property STB  [50]
+     property LFB  [10]//Max. No. of simultaneous cache misses
+     property ALU  [4] //8-wide: 4 ALU + 2 LD + 2 ST
+     property LD   [2]
+     property ST   [2]
+     connect {L1_S}
+}
+
+cache L1_F{
+      property capacity [8192]
+      property linesize [64]
+      property associativity [8]
+      property read_latency  [4]
+      property write_latency [4]
+      connect {L2}
+}
+
+cache L1_S{
+      property capacity [1024]
+      property linesize [64]
+      property associativity [8]
+      property read_latency  [4]
+      property write_latency [4]
+      connect {L2}
+}
+
+cache L2 {
+     property capacity      [128*MB]
+     property linesize      [64]
+     property associativity [16]
+     property read_latency  [100]
+     property write_latency [100]
+     property ramulator     [HBM2GB.cfg]
+     property frequency     [500*mega] //HBM_1Gps
+}
+
+memory DDR4 {
+       property capacity      [8*GB]
+       property granularity   [64]
+       property read_latency  [100]
+       property write_latency [100]
+       property ramulator     [DDR8GB1Ch.cfg]
+       property frequency     [1200*mega] //DDR4_2400
+}
+
+memory NVM {
+     property capacity      [128*GB]
+     property granularity   [4096]
+     property read_latency  [1000]
+     property write_latency [1000]
+     property nvdimmsim     [pcm2pkg.ini]
+     property frequency     [1200*mega]
+}

@@ -1,0 +1,38 @@
+model spmul_NROW23947347_NNZ57708624_t32{
+
+param nThreads=32
+param nItr=1
+
+param nRows=23947347
+param NNZ=71842041
+param global_control=nRows
+param dpsize = 8
+param spsize = 4
+
+ //nrows+1
+data rowptr as Array(nRows+1, spsize)
+data colind as Array(NNZ,spsize)
+data values as Array(NNZ, dpsize)
+data x as Array(nRows,dpsize)
+data y as Array(nRows,dpsize)
+
+
+kernel spmul {
+   execute [nThreads] "spmul" {
+      loads [nRows] of size [spsize] from  rowptr  as stride
+      loads [NNZ] of size [dpsize] from values     as stride,dep(rowptr)
+      loads [NNZ] of size [spsize] from colind     as stride,dep(rowptr)
+      loads [NNZ] of size [dpsize] from x          as random,dep(colind)
+      flops [NNZ*2] as dp
+      stores[nRows] of size [dpsize] to y          as stride,dep(x,values)
+   }
+}
+
+kernel main {
+        //warm up
+	call spmul
+	iterate [nItr] {
+        	call spmul
+	}
+}
+}

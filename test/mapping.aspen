@@ -1,0 +1,20 @@
+model STREAM_HMS{
+
+param nThreads = 1
+
+// Map Data to Machine Components with resource load/store
+data {
+     map a to DDR4
+     map b to NVM
+     map c to DDR4
+}
+
+// Map Kernel Execution to Machine Components with resource flops
+kernel{
+     map triad to Core_S
+     map copy  to Core_F
+     map scale to Core_S
+     map add   to Core_F
+}
+
+}

@@ -1,0 +1,126 @@
+model miniFE_CSR{
+
+param nThreads=32
+param nItr=1
+
+param nx=66
+param ny=64
+param nz=64
+
+param nRows= (nx+1)*(ny+1)*(nz+1)
+param nCols= 27
+param nnz  = nCols*nRows
+param global_control=nRows
+
+// Word Size in bytes
+param dpsize = 8
+
+// CSR Matrix
+data rows         as Array(nRows, dpsize) //nrows
+data row_offsets  as Array(nRows, dpsize) //nrows+1
+data packed_cols  as Array(nnz, dpsize) //nrows * nCols
+data packed_coefs as Array(nnz, dpsize) //nrows * nCols
+
+// Vector
+data b  as Array(nRows,dpsize) //nrows
+data x  as Array(nRows,dpsize) //nrows
+data r  as Array(nRows,dpsize) //nrows
+data p  as Array(nRows,dpsize) //ncols but =local row if proc<2
+data Ap as Array(nRows,dpsize) //nrows
+
+data product0  as Array(1,dpsize)
+
+ 
+//dot_r2: r*r -> beta
+kernel dot_r2{
+  execute [nThreads] "dot_r2"
+  {
+     loads  [nRows] of size [dpsize] from r as stride
+     flops  [nRows*2] as dp
+     stores [nRows] of size [dpsize] to   product0 as stride,dep(r)
+  }
+} 
+
+
+//daxpby(one, r, beta, p);
+kernel daxpby_rp{
+  execute [nThreads] "p = r + beta*p"
+  {
+   loads  [nRows] of size [dpsize] from p as stride
+   loads  [nRows] of size [dpsize] from r as stride
+   flops  [nRows*2] as dp
+   stores [nRows] of size [dpsize]  to p as stride,dep(p,r)
+  }
+}
+
+
+//matvec: Ap = A*p
+kernel matvec {
+  execute [nThreads] "Ap=A*p"
+  {
+    loads [nRows] of size [dpsize] from row_offsets  as stride
+    loads [nnz] of size [dpsize] from packed_coefs   as stride,dep(row_offsets)
+    loads [nnz] of size [dpsize] from packed_cols    as stride,dep(row_offsets)
+    loads [nnz] of size [dpsize] from p              as random,dep(packed_cols)
+    flops [nnz*2] as dp
+    stores[nRows] of size [dpsize] to Ap             as stride,dep(p,packed_coefs)
+  }
+}
+
+
+//p_ap_dot = Ap * p
+kernel p_ap_dot{
+  execute [nThreads] "p_ap_dot"
+  {
+    loads [nRows] of size [dpsize] from Ap as stride
+    loads [nRows] of size [dpsize] from p  as stride
+    flops [nRows*2] as dp
+    stores[nRows] of size [dpsize] to   product0 as stride,dep(Ap,p)
+  }
+}
+
+
+//daxpby(alpha, p, one, x);
+kernel daxpby_px{
+  execute [nThreads] "x=alpha*p + x"
+  {
+     loads  [nRows] of size [dpsize] from p as stride
+     loads  [nRows] of size [dpsize] from x as stride
+     flops  [nRows*2] as dp
+     stores [nRows] of size [dpsize] to   x as stride,dep(p,x)
+  }
+}
+
+
+//daxpby(-alpha, Ap, one, r);
+kernel daxpby_rAp{
+  execute [nThreads] "r= -alpha*Ap + r"
+  {
+     loads  [nRows] of size [dpsize] from Ap as stride
+     loads  [nRows] of size [dpsize] from r as stride
+     flops  [nRows*2] as dp
+     stores [nRows] of size [dpsize] to   r as stride,dep(Ap,r)
+  }
+} 
+
+kernel main {
+       
+     //warmup
+     call dot_r2
+     call daxpby_rp
+     call matvec
+     call p_ap_dot
+     call daxpby_px
+     call daxpby_rAp
+
+     iterate [nItr] {
+     	     call dot_r2
+     	     call daxpby_rp
+     	     call matvec
+     	     call p_ap_dot
+     	     call daxpby_px
+     	     call daxpby_rAp
+     }
+}
+
+}

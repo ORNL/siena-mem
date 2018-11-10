@@ -1,0 +1,50 @@
+param MB=1048576
+
+machine HMS{
+	core[32]  Core_S
+	cache[32] L1_S
+	cache     L2
+	memory    DDR4
+}
+
+core Core_S{
+     property frequency [2000*mega] //2 GHz
+     property ROB  [128]
+     property LDB  [100] 
+     property STB  [50]
+     property LFB  [10]//Max. No. of simultaneous cache misses
+     property ALU  [4]//can be further divided into different types
+     property LD   [2]
+     property ST   [2]
+     connect {L1_S}
+}
+
+cache L1_S{
+      property capacity [1024]
+      property linesize [64]
+      property associativity [8]
+      property read_latency  [4]
+      property write_latency [4]
+      connect {L2}
+}
+
+
+cache L2 {
+     property capacity   [8192*MB]
+     property linesize   [64]
+     property associativity [16]
+     property read_latency  [0]
+     property write_latency [0]
+     property ramulator [HMC_config.cfg]
+     property frequency [1000*mega] //2Gps
+}
+
+
+memory DDR4 {
+       property capacity [8192*MB]
+       property granularity   [64]
+       property read_latency  [0]
+       property write_latency [0]
+       property ramulator [DDR4_config.cfg]
+       property frequency [1200*mega] //DDR2400
+}

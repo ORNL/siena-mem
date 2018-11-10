@@ -1,0 +1,45 @@
+model laplace_t32 {
+
+param nThreads=32
+param nItr = 1
+param dpsize = 8
+param n = 9000
+param global_control=(n-2)*(n-2)
+
+
+//data structures
+data A as Array(n, n, dpsize)
+data B as Array(n, n, dpsize)
+
+
+//A[i][j]=(B[i-1][j]+B[i+1][j]+B[i][j-1]+B[i][j+1])/4
+kernel B2A{
+	execute [nThreads] "B2A" {
+		loads  [(n-2)*(n-2)] of size [dpsize]  from B  as stencil4p //stencil5p excluding center
+		flops  [(n-2)*(n-2)*5] as dp
+		stores [(n-2)*(n-2)] of size [dpsize]  to   A  as ghostcell,dep(B)
+	}
+}
+
+
+//B[i][j]=A[i][j]-B[i][j]
+kernel A2B{
+	execute [nThreads] "A2B" {
+		loads [(n-2)*(n-2)] of size [dpsize] from A as ghostcell
+		loads [(n-2)*(n-2)] of size [dpsize] from B as ghostcell
+		flops [(n-2)*(n-2)] as dp
+		stores[(n-2)*(n-2)] of size [dpsize] to   B as ghostcell,dep(A,B)
+	}
+}
+
+kernel main {
+       //warmup
+       call B2A
+       call A2B
+       iterate [nItr]"laplace" {
+       	       call B2A
+	       call A2B
+       }
+}
+
+}

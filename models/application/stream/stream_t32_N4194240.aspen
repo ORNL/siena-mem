@@ -1,0 +1,61 @@
+model stream_t32_N4194240{
+
+param nThreads=32
+param nItr=1
+param N=4194240
+param dpsize=8
+
+data a as Array(N, dpsize)
+data b as Array(N, dpsize)
+data c as Array(N, dpsize)
+
+kernel copy {
+    execute [nThreads] "copy" {
+            loads [N] of size [dpsize] from a as stride 
+            stores[N] of size [dpsize] to   c as stride,dep(a) 
+    }
+}
+
+
+kernel add {
+    execute [nThreads] "add" {
+            loads [N] of size [dpsize] from a as stride 
+            loads [N] of size [dpsize] from b as stride 
+            flops [N] as dp 
+            stores[N] of size [dpsize] to   c as stride,dep(a,b) 
+    }
+}
+
+
+kernel scale {
+    execute [nThreads] "scale" {
+            loads [N] of size [dpsize] from c as stride 
+            flops [N] as dp 
+            stores[N] of size [dpsize] to   b as stride,dep(c) 
+    }
+}
+
+
+kernel triad {
+    execute [nThreads] "triad" {
+            loads [N] of size [dpsize] from c as stride 
+            loads [N] of size [dpsize] from b as stride 
+            flops [N*2] as dp 
+            stores[N] of size [dpsize] to   a as stride,dep(c,b) 
+    }
+}
+
+kernel main {
+   //warm up
+   call triad
+   //call copy
+   //call scale
+   //call add
+   iterate [nItr] {
+        call triad
+	//call copy
+	//call scale
+	//call add
+   }
+}
+}

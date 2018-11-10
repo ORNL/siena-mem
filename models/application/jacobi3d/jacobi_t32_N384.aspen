@@ -1,0 +1,46 @@
+model jacobi3d {
+
+param nThreads=32
+param nItr = 1
+
+param dpsize = 8
+param N=384
+param n1=N+2
+param n2=N+2
+param n3=N+2
+param global_control=(n1-2)*(n2-2)*(n3-2)
+
+
+data A    as Array(n1,n2,n3,dpsize)
+data Anew as Array(n1,n2,n3,dpsize)
+
+
+//Anew+=jacobi(A)
+kernel k0{
+	execute [nThreads] "Anew+=jacobi(A)" {
+		loads [(n1-2)*(n2-2)*(n3-2)] of size [dpsize] from A    as stencil27p
+		loads [(n1-2)*(n2-2)*(n3-2)] of size [dpsize] from Anew as ghostcell
+		flops [(n1-2)*(n2-2)*(n3-2)*27*2] as dp
+		stores[(n1-2)*(n2-2)*(n3-2)] of size [dpsize] to   Anew as ghostcell,dep(A,Anew)
+	}
+}
+
+
+//A=Anew
+kernel k1{
+	execute [nThreads] "A=Anew" {
+		loads [(n1-2)*(n2-2)*(n3-2)] of size [dpsize] from Anew as ghostcell
+		stores[(n1-2)*(n2-2)*(n3-2)] of size [dpsize] to   A    as ghostcell
+	}
+}
+
+kernel main {
+       //warmup
+       call k0 
+       call k1
+       iterate [nItr]{
+       	       call k0	       
+	       call k1
+       }
+}
+}

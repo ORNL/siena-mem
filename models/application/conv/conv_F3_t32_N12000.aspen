@@ -1,0 +1,37 @@
+model conv_F3_N120000_F3_t32{
+
+param nThreads=32
+param nItr=1
+//matrix size
+param N=12000
+//filter size
+param F=3
+//boundary
+param bcell= F/2
+//element size
+param dpsize=8
+param global_control=(N-F+1)*(N-F+1)
+
+data A as Array(N, N, dpsize)
+data B as Array(N, N, dpsize)
+data filter as Array(F, F, dpsize)
+
+
+//B=conv(A)
+kernel conv{
+    execute [nThreads] "conv" {
+            loads [(N-F+1)*(N-F+1)] of size [dpsize] from A as conv(F,F)
+            loads [(N-F+1)*(N-F+1)*F*F] of size [dpsize] from filter as stride
+            flops [(N-F+1)*(N-F+1)*F*F*2] as dp 
+            stores[(N-F+1)*(N-F+1)] of size [dpsize] to   B as ghostcell(bcell),dep(A,filter)
+    }
+}
+
+kernel main {
+        //warm up
+	call conv
+   	iterate [nItr] {
+        	call conv
+	}
+}
+}

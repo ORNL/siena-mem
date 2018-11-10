@@ -1,0 +1,21 @@
+model spmul{
+
+param n = 1
+
+// Map Data to Machine Components with resource load/store
+data {
+
+     map colind to NVM
+     map values to NVM
+     map x      to NVM
+     map rowptr to HPM1
+     map y      to HPM1
+}
+
+// Map Kernel Execution to Machine Components with resource flops
+kernel{
+     map spmul to Core_S
+}
+
+}
+

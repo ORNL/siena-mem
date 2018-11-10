@@ -1,0 +1,30 @@
+# Copyright 2013-2018 UT-Battelle, LLC.  See LICENSE.txt for more information.
+@VARIABLES@
+
+SUBDIRS_COMMON=aspen #examples tools test c
+#SUBDIRS_PYTHON=python
+#SUBDIRS_JAVA=java
+
+DISTCLEAN_FILES=config.status config.log \
+ config/make-variables config/make-targets \
+ config/make-dependancies \
+ config/AspenConfig.h autom4te.cache
+
+all: $(SUBDIRS)
+
+examples: aspen
+
+tools: aspen
+
+nlopt: aspen
+
+python: aspen
+
+java: aspen
+
+test: examples tools aspen
+
+check: $(SUBDIRS)
+	(cd test && $(MAKE) check)
+
+@TARGETS@
