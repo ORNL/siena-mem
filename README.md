@@ -1,5 +1,11 @@
 Siena: a tool for exploring the design space of heterogeneous memory systems
 
+
+	[1] Ivy B. Peng and Jeffrey S. Vetter. "Siena: exploring the design space of heterogeneous memory systems." 
+	Proceedings of the International Conference for High Performance Computing, Networking, Storage, and Analysis. 
+	IEEE Press, 2018.
+
+
 Siena facilitates quick exploration of diverse memory architectures with flexible configurations of heterogeneous memory systems and various memory access workloads. Siena uses ASPEN modelling language for representing workload memory-access behaviours and couples with popular memory simulators to accurately model new memory technologies.
 
 ##Quick Start:
